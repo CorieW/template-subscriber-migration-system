@@ -1,0 +1,13 @@
+{
+  "name": "template-subscriber-migration-system",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "lint": "node --check scripts/*.mjs && node --check src/template-sync/*.js && node --check test/*.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

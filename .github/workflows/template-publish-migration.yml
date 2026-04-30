@@ -1,0 +1,32 @@
+name: Publish template migration
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number merged into main
+        required: true
+        type: number
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout template repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Publish migration bundle release
+        id: publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node scripts/publish-template-migration.mjs "${{ inputs.pr_number }}"

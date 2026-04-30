@@ -1,0 +1,45 @@
+name: Template migration command
+
+on:
+  issue_comment:
+    types:
+      - created
+
+permissions:
+  contents: read
+
+concurrency:
+  group: template-migration-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+env:
+  # Set this in the template repo before subscribers are created, for example: octo-org/template-repo
+  TEMPLATE_SYNC_DEFAULT_UPSTREAM_REPO: OWNER/TEMPLATE_REPO
+  OPENAI_MODEL: gpt-4.1
+
+jobs:
+  command:
+    if: github.event.issue.pull_request
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout subscriber repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.TEMPLATE_SYNC_BOT_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Handle template sync command
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          TEMPLATE_SYNC_BOT_TOKEN: ${{ secrets.TEMPLATE_SYNC_BOT_TOKEN }}
+          TEMPLATE_SYNC_UPSTREAM_READ_TOKEN: ${{ secrets.TEMPLATE_SYNC_UPSTREAM_READ_TOKEN }}
+          TEMPLATE_SYNC_DEFAULT_UPSTREAM_REPO: ${{ env.TEMPLATE_SYNC_DEFAULT_UPSTREAM_REPO }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ env.OPENAI_MODEL }}
+        run: node scripts/handle-template-sync-command.mjs

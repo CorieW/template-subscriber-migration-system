@@ -1,0 +1,40 @@
+name: Template sync
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: template-sync-${{ github.repository }}
+  cancel-in-progress: false
+
+env:
+  # Set this in the template repo before subscribers are created, for example: octo-org/template-repo
+  TEMPLATE_SYNC_DEFAULT_UPSTREAM_REPO: OWNER/TEMPLATE_REPO
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout subscriber repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.TEMPLATE_SYNC_BOT_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Discover newest template migration
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          TEMPLATE_SYNC_BOT_TOKEN: ${{ secrets.TEMPLATE_SYNC_BOT_TOKEN }}
+          TEMPLATE_SYNC_UPSTREAM_READ_TOKEN: ${{ secrets.TEMPLATE_SYNC_UPSTREAM_READ_TOKEN }}
+          TEMPLATE_SYNC_DEFAULT_UPSTREAM_REPO: ${{ env.TEMPLATE_SYNC_DEFAULT_UPSTREAM_REPO }}
+        run: node scripts/subscriber-sync.mjs
