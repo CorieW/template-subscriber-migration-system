@@ -28,7 +28,7 @@ npm run docs:preview
 
 ## CI
 
-The CI workflow runs on pull requests and pushes to `main`.
+The CI workflow runs on pull requests and pushes to `master`.
 
 It checks:
 
@@ -47,7 +47,7 @@ Add a changeset before merging a package change:
 npm run changeset
 ```
 
-On `main`, Changesets creates a release PR or publishes when the release PR is merged. Publishing requires `NPM_TOKEN`.
+Run the release workflow manually to let Changesets create a release PR or publish when the release PR is merged. Publishing requires `NPM_TOKEN` or npm trusted publishing.
 
 ## Documentation Deploys
 

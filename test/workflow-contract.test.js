@@ -95,7 +95,7 @@ test("ci workflow runs format lint test knip and docs build", () => {
   const packageJson = JSON.parse(read("package.json"));
 
   assert.match(workflow, /pull_request:/);
-  assert.match(workflow, /branches:\n\s+- main/);
+  assert.match(workflow, /branches:\n\s+- master/);
   assert.match(workflow, /npm ci/);
   assert.match(workflow, /npm run format:check/);
   assert.match(workflow, /npm run lint/);
@@ -116,7 +116,7 @@ test("release workflow uses changesets and can deploy docs manually", () => {
   const packageJson = JSON.parse(read("package.json"));
   const changesetConfig = JSON.parse(read(".changeset/config.json"));
 
-  assert.match(workflow, /push:\n\s+branches:\n\s+- main/);
+  assert.doesNotMatch(workflow, /^\s*push:/m);
   assert.match(workflow, /contents: write/);
   assert.match(workflow, /pull-requests: write/);
   assert.match(workflow, /uses: changesets\/action@v1/);
@@ -125,6 +125,7 @@ test("release workflow uses changesets and can deploy docs manually", () => {
   assert.match(workflow, /workflow_dispatch:/);
   assert.match(workflow, /deploy_docs:/);
   assert.match(workflow, /uses: withastro\/action@v3/);
+  assert.match(workflow, /enablement: true/);
   assert.match(workflow, /uses: actions\/deploy-pages@v4/);
   assert.equal(packageJson.scripts.changeset, "changeset");
   assert.equal(packageJson.scripts.version, "changeset version");
@@ -138,10 +139,11 @@ test("docs deploy workflow publishes starlight docs to github pages", () => {
   const contentConfig = read("src/content.config.js");
 
   assert.match(workflow, /workflow_dispatch:/);
-  assert.match(workflow, /branches:\n\s+- main/);
+  assert.match(workflow, /branches:\n\s+- master/);
   assert.match(workflow, /pages: write/);
   assert.match(workflow, /id-token: write/);
   assert.match(workflow, /uses: withastro\/action@v3/);
+  assert.match(workflow, /enablement: true/);
   assert.match(workflow, /uses: actions\/deploy-pages@v4/);
   assert.match(astroConfig, /@astrojs\/starlight/);
   assert.match(astroConfig, /DOCS_BASE_PATH/);
