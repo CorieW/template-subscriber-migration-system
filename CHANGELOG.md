@@ -1,5 +1,11 @@
 # template-subscriber-migration-system
 
+## 0.2.1
+
+### Patch Changes
+
+- 02ce3e1: Accept approve/revise guidance on the same line as the template sync command and require `OPENAI_API_KEY` before generation, even when using mocked generation output.
+
 ## 0.2.0
 
 ### Minor Changes
