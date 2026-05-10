@@ -1,5 +1,11 @@
 # template-subscriber-migration-system
 
+## 0.2.3
+
+### Patch Changes
+
+- 74ec7c0: Block repeat `/template-sync approve` commands after an initial generation pass has completed, and direct follow-up migration changes through `/template-sync revise`.
+
 ## 0.2.2
 
 ### Patch Changes
