@@ -31,17 +31,17 @@ It also includes example GitHub Actions workflows for template publishing, subsc
 
 ## Install
 
-Use a pinned package spec in workflows:
+Workflows default to the latest published package. Change the suffix to pin or test another version:
 
 ```yaml
 env:
-  TEMPLATE_SYNC_PACKAGE: template-subscriber-migration-system@0.1.0
+  TEMPLATE_SYNC_PACKAGE: template-subscriber-migration-system@latest
 ```
 
 Run a binary directly:
 
 ```sh
-npm exec --yes --package template-subscriber-migration-system@0.1.0 -- subscriber-template-sync
+npm exec --yes --package template-subscriber-migration-system@latest -- subscriber-template-sync
 ```
 
 Or install locally:

@@ -15,8 +15,8 @@ concurrency:
 env:
   # Set this in the template repo before subscribers are created, for example: octo-org/template-repo
   TEMPLATE_SYNC_DEFAULT_UPSTREAM_REPO: OWNER/TEMPLATE_REPO
-  # Set this to a published npm package, git URL, or tarball package spec.
-  TEMPLATE_SYNC_PACKAGE: ""
+  # Change this to pin a version, git URL, or tarball package spec.
+  TEMPLATE_SYNC_PACKAGE: template-subscriber-migration-system@latest
 
 jobs:
   sync:

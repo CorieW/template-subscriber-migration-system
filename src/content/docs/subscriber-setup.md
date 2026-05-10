@@ -12,7 +12,7 @@ Required workflow environment:
 ```yaml
 env:
   TEMPLATE_SYNC_DEFAULT_UPSTREAM_REPO: octo-org/template-repo
-  TEMPLATE_SYNC_PACKAGE: template-subscriber-migration-system@0.1.0
+  TEMPLATE_SYNC_PACKAGE: template-subscriber-migration-system@latest
 ```
 
 The workflow runs daily and can be triggered manually.

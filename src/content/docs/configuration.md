@@ -9,10 +9,10 @@ Set these in repositories that publish template migrations with `.github/workflo
 
 ### Environment
 
-| Name                    | Required | Description                                                                            |
-| ----------------------- | -------- | -------------------------------------------------------------------------------------- |
-| `TEMPLATE_SYNC_PACKAGE` | Yes      | Package spec installed by `npm exec`, such as an npm version, git URL, or tarball URL. |
-| `OPENAI_MODEL`          | No       | Model used for optional migration summary generation. Defaults to `gpt-5.5`.           |
+| Name                    | Required | Description                                                                                                                                           |
+| ----------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TEMPLATE_SYNC_PACKAGE` | No       | Package spec installed by `npm exec`. Defaults to `template-subscriber-migration-system@latest`; change it to pin a version, git URL, or tarball URL. |
+| `OPENAI_MODEL`          | No       | Model used for optional migration summary generation. Defaults to `gpt-5.5`.                                                                          |
 
 ### Secrets
 
@@ -29,11 +29,11 @@ Set these in repositories that receive template migrations with `.github/workflo
 
 ### Environment
 
-| Name                                  | Required | Description                                                                            |
-| ------------------------------------- | -------- | -------------------------------------------------------------------------------------- |
-| `TEMPLATE_SYNC_PACKAGE`               | Yes      | Package spec installed by `npm exec`, such as an npm version, git URL, or tarball URL. |
-| `TEMPLATE_SYNC_DEFAULT_UPSTREAM_REPO` | Yes      | Default upstream template repository in `OWNER/REPO` form.                             |
-| `OPENAI_MODEL`                        | No       | Model used for generation. Defaults to `gpt-5.5` in the workflow example.              |
+| Name                                  | Required | Description                                                                                                                                           |
+| ------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TEMPLATE_SYNC_PACKAGE`               | No       | Package spec installed by `npm exec`. Defaults to `template-subscriber-migration-system@latest`; change it to pin a version, git URL, or tarball URL. |
+| `TEMPLATE_SYNC_DEFAULT_UPSTREAM_REPO` | Yes      | Default upstream template repository in `OWNER/REPO` form.                                                                                            |
+| `OPENAI_MODEL`                        | No       | Model used for generation. Defaults to `gpt-5.5` in the workflow example.                                                                             |
 
 ### Secrets
 

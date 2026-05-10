@@ -23,8 +23,8 @@ test("publish workflow is manual only and publishes PR-scoped release assets", (
   assert.match(workflow, /TEMPLATE_SYNC_GENERATE_SUMMARY/);
   assert.match(workflow, /OPENAI_API_KEY/);
   assert.match(workflow, /OPENAI_MODEL: gpt-5\.5/);
-  assert.match(workflow, /Set TEMPLATE_SYNC_PACKAGE to a published npm package, git URL, or tarball package spec/);
-  assert.doesNotMatch(workflow, /@latest/);
+  assert.match(workflow, /Change this to pin a version, git URL, or tarball package spec/);
+  assert.match(workflow, /TEMPLATE_SYNC_PACKAGE: template-subscriber-migration-system@latest/);
   assert.match(workflow, /npm exec --yes --package "\$TEMPLATE_SYNC_PACKAGE" -- publish-template-migration/);
   assert.match(script, /repository\.default_branch/);
   assert.match(script, /templateBranch/);
@@ -45,8 +45,8 @@ test("subscriber sync workflow polls newest release and opens at most one draft 
   assert.match(workflow, /workflow_dispatch/);
   assert.match(workflow, /secrets\.TEMPLATE_SYNC_BOT_TOKEN/);
   assert.match(workflow, /TEMPLATE_SYNC_PACKAGE:/);
-  assert.match(workflow, /Set TEMPLATE_SYNC_PACKAGE to a published npm package, git URL, or tarball package spec/);
-  assert.doesNotMatch(workflow, /@latest/);
+  assert.match(workflow, /Change this to pin a version, git URL, or tarball package spec/);
+  assert.match(workflow, /TEMPLATE_SYNC_PACKAGE: template-subscriber-migration-system@latest/);
   assert.match(workflow, /npm exec --yes --package "\$TEMPLATE_SYNC_PACKAGE" -- subscriber-template-sync/);
   assert.match(script, /selectNewestMigrationRelease/);
   assert.match(script, /migrationMatchesHandledState/);
@@ -65,8 +65,8 @@ test("comment workflow supports approve revise decline with bot-token pushes", (
   assert.match(workflow, /token: \$\{\{ secrets\.TEMPLATE_SYNC_BOT_TOKEN \}\}/);
   assert.match(workflow, /OPENAI_API_KEY/);
   assert.match(workflow, /TEMPLATE_SYNC_PACKAGE:/);
-  assert.match(workflow, /Set TEMPLATE_SYNC_PACKAGE to a published npm package, git URL, or tarball package spec/);
-  assert.doesNotMatch(workflow, /@latest/);
+  assert.match(workflow, /Change this to pin a version, git URL, or tarball package spec/);
+  assert.match(workflow, /TEMPLATE_SYNC_PACKAGE: template-subscriber-migration-system@latest/);
   assert.match(workflow, /npm exec --yes --package "\$TEMPLATE_SYNC_PACKAGE" -- handle-template-sync-command/);
   assert.match(script, /parseTemplateSyncCommand/);
   assert.match(script, /hasWritePermission/);

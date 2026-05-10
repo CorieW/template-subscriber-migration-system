@@ -7,11 +7,11 @@ description: Publish migration bundles from the upstream template repository.
 
 Use `.github/workflows/template-publish-migration.yml` in the template repository.
 
-Required workflow environment:
+Workflow package environment:
 
 ```yaml
 env:
-  TEMPLATE_SYNC_PACKAGE: template-subscriber-migration-system@0.1.0
+  TEMPLATE_SYNC_PACKAGE: template-subscriber-migration-system@latest
 ```
 
 Optional summary model:

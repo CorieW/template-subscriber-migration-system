@@ -18,8 +18,8 @@ permissions:
   pull-requests: read
 
 env:
-  # Set this to a published npm package, git URL, or tarball package spec.
-  TEMPLATE_SYNC_PACKAGE: ""
+  # Change this to pin a version, git URL, or tarball package spec.
+  TEMPLATE_SYNC_PACKAGE: template-subscriber-migration-system@latest
   OPENAI_MODEL: gpt-5.5
 
 jobs:

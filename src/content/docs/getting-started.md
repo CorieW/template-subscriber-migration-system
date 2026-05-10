@@ -5,13 +5,13 @@ description: Install the package, configure workflows, and run one migration.
 
 ## 1. Pick a Package Spec
 
-Each workflow runs package binaries through `npm exec`. Set `TEMPLATE_SYNC_PACKAGE` to something GitHub Actions can install.
+Each workflow runs package binaries through `npm exec`. The workflow examples default to the latest published package. Edit `TEMPLATE_SYNC_PACKAGE` when you want to pin a version, use a git URL, or use a tarball URL.
 
 Examples:
 
 ```yaml
 env:
-  TEMPLATE_SYNC_PACKAGE: template-subscriber-migration-system@0.1.0
+  TEMPLATE_SYNC_PACKAGE: template-subscriber-migration-system@latest
 ```
 
 ```yaml
@@ -19,11 +19,11 @@ env:
   TEMPLATE_SYNC_PACKAGE: github:OWNER/template-subscriber-migration-system#v0.1.0
 ```
 
-Do not use `@latest` for production subscribers. Pin an exact version or immutable tag so old repositories do not change behavior unexpectedly.
+For production subscribers, consider pinning an exact version or immutable tag so old repositories do not change behavior unexpectedly.
 
 ## 2. Configure the Template Repository
 
-Copy `.github/workflows/template-publish-migration.yml` into the template repository and set `TEMPLATE_SYNC_PACKAGE`.
+Copy `.github/workflows/template-publish-migration.yml` into the template repository. Keep the default `TEMPLATE_SYNC_PACKAGE` or edit it to pin the package spec.
 
 After a template PR merges, run the workflow manually with the merged PR number:
 
