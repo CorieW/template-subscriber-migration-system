@@ -1,10 +1,22 @@
 import { GENERATION_COMMENT_MARKER } from "./constants.js";
 
+const MAX_FAILURE_MESSAGE_LENGTH = 4000;
+
 function renderFileList(files) {
   if (!files?.length) {
     return "- No changed files were reported in the bundle.";
   }
   return files.map((file) => `- \`${file.filename}\` (${file.status})`).join("\n");
+}
+
+function renderCodeFenceText(value) {
+  const text = String(value || "Unknown error")
+    .replaceAll("```", "` ` `")
+    .trim();
+  if (text.length <= MAX_FAILURE_MESSAGE_LENGTH) {
+    return text;
+  }
+  return `${text.slice(0, MAX_FAILURE_MESSAGE_LENGTH - 17)}\n...[truncated]`;
 }
 
 export function renderMigrationPrTitle(bundle) {
@@ -84,4 +96,19 @@ ${drift}`;
 
 export function renderDeclineComment(migrationId) {
   return `Template migration \`${migrationId}\` was declined and the subscriber state was updated.`;
+}
+
+export function renderCommandFailureComment({ action, errorMessage }) {
+  const command = action ? `/template-sync ${action}` : "/template-sync";
+  return `## Template migration command failed
+
+The \`${command}\` command could not complete.
+
+Error:
+
+\`\`\`text
+${renderCodeFenceText(errorMessage)}
+\`\`\`
+
+Fix the configuration or workflow problem, then comment \`${command}\` again.`;
 }

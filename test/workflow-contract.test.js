@@ -68,6 +68,9 @@ test("comment workflow supports approve revise decline with bot-token pushes", (
   assert.match(script, /writeSubscriberStateTransition\(api, repoFullName, "applied"/);
   assert.match(script, /ls-files", "--modified", "--deleted", "--others", "--exclude-standard"/);
   assert.match(script, /Validation failed; subscriber state was not marked applied/);
+  assert.match(script, /renderCommandFailureComment/);
+  assert.match(script, /templateSyncAlreadyCommented/);
+  assert.match(script, /OPENAI_API_KEY/);
   assert.ok(
     script.indexOf("if (failedValidationResults.length > 0)") <
       script.lastIndexOf("commitAndPushIfNeeded({ pullRequest, migrationId, mode: command.action })"),

@@ -15,8 +15,41 @@ import { scoreDrift } from "../src/template-sync/drift.js";
 import { buildGenerationPrompt, callOpenAiForGeneration } from "../src/template-sync/openai.js";
 import { applyGenerationPlan, validateGenerationPlan } from "../src/template-sync/generation-contract.js";
 import { refreshDependencies, runValidation } from "../src/template-sync/validation.js";
-import { renderDeclineComment, renderGenerationComment } from "../src/template-sync/render.js";
+import {
+  renderCommandFailureComment,
+  renderDeclineComment,
+  renderGenerationComment,
+} from "../src/template-sync/render.js";
 import { parseRepo, requireEnv, uniqueSorted } from "../src/template-sync/utils.js";
+
+const SENSITIVE_ENV_NAMES = Object.freeze([
+  "GITHUB_TOKEN",
+  "OPENAI_API_KEY",
+  "TEMPLATE_SYNC_BOT_TOKEN",
+  "TEMPLATE_SYNC_UPSTREAM_READ_TOKEN",
+]);
+
+function markErrorCommented(error) {
+  if (error && typeof error === "object") {
+    error.templateSyncAlreadyCommented = true;
+  }
+  return error;
+}
+
+function redactSensitiveValues(value, env = process.env) {
+  let text = String(value || "");
+  for (const name of SENSITIVE_ENV_NAMES) {
+    const secret = env[name];
+    if (secret && secret.length >= 4) {
+      text = text.replaceAll(secret, `[redacted ${name}]`);
+    }
+  }
+  return text;
+}
+
+function safeErrorMessage(error) {
+  return redactSensitiveValues(error?.message || String(error || "Unknown error")).trim() || "Unknown error";
+}
 
 function runGit(args, options = {}) {
   const output = execFileSync("git", args, {
@@ -46,6 +79,27 @@ async function addIssueComment(api, repoFullName, issueNumber, body) {
   await api.request("POST", `/repos/${repo.owner}/${repo.repo}/issues/${issueNumber}/comments`, {
     body: { body },
   });
+}
+
+async function addIssueCommentAndThrow(api, repoFullName, issueNumber, body, error) {
+  await addIssueComment(api, repoFullName, issueNumber, body);
+  throw markErrorCommented(error);
+}
+
+async function commentOnCommandFailure({ api, repoFullName, issueNumber, command, error }) {
+  if (error?.templateSyncAlreadyCommented) {
+    return;
+  }
+  await addIssueComment(
+    api,
+    repoFullName,
+    issueNumber,
+    renderCommandFailureComment({
+      action: command?.action,
+      errorMessage: safeErrorMessage(error),
+    }),
+  );
+  markErrorCommented(error);
 }
 
 async function loadPullRequest(api, repoFullName, number) {
@@ -90,33 +144,17 @@ function commitAndPushIfNeeded({ pullRequest, migrationId, mode }) {
   return changedFiles;
 }
 
-async function main() {
-  const event = readEvent();
-  const command = parseTemplateSyncCommand(event.comment?.body || "");
-  if (!command) {
-    console.log("No template-sync command found.");
-    return;
-  }
-  if (!event.issue?.pull_request) {
-    console.log("Template sync commands are only accepted on pull requests.");
-    return;
-  }
-
-  const repoFullName = requireEnv("GITHUB_REPOSITORY");
-  const botToken = requireEnv("TEMPLATE_SYNC_BOT_TOKEN");
-  const api = new GitHubApi({ token: botToken });
-  const issueNumber = event.issue.number;
+async function handleTemplateSyncCommand({ event, command, api, repoFullName, botToken, issueNumber }) {
   const commenter = event.comment.user.login;
-
   const permission = await getCollaboratorPermission(api, repoFullName, commenter);
   if (!hasWritePermission(permission)) {
-    await addIssueComment(
+    await addIssueCommentAndThrow(
       api,
       repoFullName,
       issueNumber,
       `@${commenter} does not have permission to run template sync commands.`,
+      new Error(`User ${commenter} has insufficient permission: ${permission}`),
     );
-    throw new Error(`User ${commenter} has insufficient permission: ${permission}`);
   }
 
   const [issue, pullRequest] = await Promise.all([
@@ -154,13 +192,13 @@ async function main() {
 
   const priorGenerationSummaries = await collectPriorGenerationSummaries(api, repoFullName, issueNumber);
   if (command.action === "revise" && priorGenerationSummaries.length === 0) {
-    await addIssueComment(
+    await addIssueCommentAndThrow(
       api,
       repoFullName,
       issueNumber,
       "Revision requested before any generation pass has completed.",
+      new Error("Cannot revise before initial generation."),
     );
-    throw new Error("Cannot revise before initial generation.");
   }
 
   checkoutPullRequestBranch({ repoFullName, pullRequest, botToken });
@@ -191,7 +229,7 @@ async function main() {
   const failedValidationResults = validationResults.filter((result) => result.exitCode !== 0);
 
   if (failedValidationResults.length > 0) {
-    await addIssueComment(
+    await addIssueCommentAndThrow(
       api,
       repoFullName,
       issueNumber,
@@ -203,11 +241,11 @@ async function main() {
         driftWarnings: [...drift.warnings, ...(generationPlan.driftWarnings || [])],
         summary: `${generationPlan.summary}\n\nValidation failed; subscriber state was not marked applied.`,
       }),
-    );
-    throw new Error(
-      `Validation failed for ${migrationId}: ${failedValidationResults
-        .map((result) => `${result.command} exited ${result.exitCode}`)
-        .join("; ")}`,
+      new Error(
+        `Validation failed for ${migrationId}: ${failedValidationResults
+          .map((result) => `${result.command} exited ${result.exitCode}`)
+          .join("; ")}`,
+      ),
     );
   }
 
@@ -228,6 +266,35 @@ async function main() {
   );
 
   console.log(`${command.action} completed for ${migrationId}`);
+}
+
+async function main() {
+  const event = readEvent();
+  const command = parseTemplateSyncCommand(event.comment?.body || "");
+  if (!command) {
+    console.log("No template-sync command found.");
+    return;
+  }
+  if (!event.issue?.pull_request) {
+    console.log("Template sync commands are only accepted on pull requests.");
+    return;
+  }
+
+  const repoFullName = requireEnv("GITHUB_REPOSITORY");
+  const botToken = requireEnv("TEMPLATE_SYNC_BOT_TOKEN");
+  const api = new GitHubApi({ token: botToken });
+  const issueNumber = event.issue.number;
+
+  try {
+    await handleTemplateSyncCommand({ event, command, api, repoFullName, botToken, issueNumber });
+  } catch (error) {
+    try {
+      await commentOnCommandFailure({ api, repoFullName, issueNumber, command, error });
+    } catch (commentError) {
+      console.error(`Failed to comment on template sync error: ${commentError.stack || commentError.message}`);
+    }
+    throw error;
+  }
 }
 
 main().catch((error) => {

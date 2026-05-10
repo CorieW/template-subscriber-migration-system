@@ -43,6 +43,8 @@ Close the migration PR and mark the migration declined:
 
 The command workflow applies generated file operations locally, refreshes lockfiles when `package.json` changes, runs available validation scripts, then commits and pushes only if validation passes.
 
+If a recognized command cannot complete, the workflow comments on the PR with the failure message. This includes missing configuration such as `OPENAI_API_KEY`, upstream release lookup failures, OpenAI API failures, malformed generation output, checkout failures, and push failures. Errors that happen before the workflow can read the issue event or bot token still appear only in the GitHub Actions logs.
+
 Validation scripts run in this order when present:
 
 1. `lint`
