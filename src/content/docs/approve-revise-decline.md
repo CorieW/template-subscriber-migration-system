@@ -7,7 +7,7 @@ Commands must start on the first line of a comment on a migration PR. Only users
 
 ## Approve
 
-Generate subscriber changes:
+Generate the first subscriber change pass:
 
 ```text
 /template-sync approve
@@ -25,6 +25,8 @@ Or put short guidance on the same line:
 ```text
 /template-sync approve Use the existing settings module.
 ```
+
+Use `approve` once. After a generation pass completes, use `revise` for follow-up changes.
 
 ## Revise
 

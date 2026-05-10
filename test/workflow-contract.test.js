@@ -76,6 +76,7 @@ test("comment workflow supports approve revise decline with bot-token pushes", (
   assert.match(script, /Validation failed; subscriber state was not marked applied/);
   assert.match(script, /renderCommandFailureComment/);
   assert.match(script, /templateSyncAlreadyCommented/);
+  assert.match(script, /Cannot approve after initial generation/);
   assert.match(script, /OPENAI_API_KEY/);
   assert.ok(
     script.indexOf('const openAiApiKey = requireEnv("OPENAI_API_KEY");') <

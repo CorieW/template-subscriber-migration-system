@@ -53,9 +53,9 @@ ${renderFileList(bundle.changedFiles)}
 ## Admin Commands
 
 - \`/template-sync approve\`
-- \`/template-sync approve\` followed by implementation instructions in the rest of the comment
-- \`/template-sync revise\`
-- \`/template-sync revise\` followed by revision instructions in the rest of the comment
+- \`/template-sync approve\` followed by implementation instructions
+- \`/template-sync revise\` for follow-up changes after generation
+- \`/template-sync revise\` followed by revision instructions
 - \`/template-sync decline\`
 
 No code has been generated yet. This draft PR is waiting for an admin decision.`;

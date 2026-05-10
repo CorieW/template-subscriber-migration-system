@@ -191,6 +191,15 @@ async function handleTemplateSyncCommand({ event, command, api, repoFullName, bo
   }
 
   const priorGenerationSummaries = await collectPriorGenerationSummaries(api, repoFullName, issueNumber);
+  if (command.action === "approve" && priorGenerationSummaries.length > 0) {
+    await addIssueCommentAndThrow(
+      api,
+      repoFullName,
+      issueNumber,
+      "Approval requested after a generation pass has already completed. Use `/template-sync revise` for follow-up changes.",
+      new Error("Cannot approve after initial generation. Use revise for follow-up changes."),
+    );
+  }
   if (command.action === "revise" && priorGenerationSummaries.length === 0) {
     await addIssueCommentAndThrow(
       api,
