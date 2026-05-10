@@ -1,5 +1,11 @@
 # template-subscriber-migration-system
 
+## 0.2.2
+
+### Patch Changes
+
+- 573ba1c: Make generated operation schemas compatible with strict OpenAI Structured Outputs and allow delete operations to use null content.
+
 ## 0.2.1
 
 ### Patch Changes

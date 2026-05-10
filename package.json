@@ -1,6 +1,6 @@
 {
   "name": "template-subscriber-migration-system",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "GitHub Actions helpers for publishing template migration bundles and applying them in subscriber repositories.",
   "repository": {
     "type": "git",
