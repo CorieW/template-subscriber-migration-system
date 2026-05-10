@@ -7,13 +7,15 @@ export const ALLOWED_PERMISSIONS = Object.freeze(["write", "maintain", "admin"])
 export function parseTemplateSyncCommand(commentBody) {
   const normalized = normalizeNewlines(commentBody).trimEnd();
   const [firstLine = "", ...rest] = normalized.split("\n");
-  const match = firstLine.trim().match(/^\/template-sync\s+(approve|revise|decline)\s*$/);
+  const match = firstLine.trim().match(/^\/template-sync\s+(approve|revise|decline)(?:\s+(.+))?\s*$/);
   if (!match) {
     return null;
   }
+  const inlineInstructions = match[2]?.trim() || "";
+  const blockInstructions = rest.join("\n").trim();
   return {
     action: match[1],
-    instructions: rest.join("\n").trim(),
+    instructions: [inlineInstructions, blockInstructions].filter(Boolean).join("\n\n"),
   };
 }
 

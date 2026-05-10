@@ -3,7 +3,7 @@ title: Approve, Revise, or Decline
 description: Use PR comments to control subscriber migration generation.
 ---
 
-Commands must be the first line of a comment on a migration PR. Only users with `write`, `maintain`, or `admin` repository permission can run them.
+Commands must start on the first line of a comment on a migration PR. Only users with `write`, `maintain`, or `admin` repository permission can run them. Add guidance on the same line or in the remaining comment body.
 
 ## Approve
 
@@ -20,6 +20,12 @@ Add implementation guidance after the first line:
 Use the existing settings module instead of creating a new config file.
 ```
 
+Or put short guidance on the same line:
+
+```text
+/template-sync approve Use the existing settings module.
+```
+
 ## Revise
 
 Request a new generation pass after an approval pass has completed:
@@ -27,6 +33,12 @@ Request a new generation pass after an approval pass has completed:
 ```text
 /template-sync revise
 Keep the generated lockfile update, but move route constants into src/routes.js.
+```
+
+Short revision guidance can also go on the command line:
+
+```text
+/template-sync revise Move route constants into src/routes.js.
 ```
 
 Revisions include previous generation summaries in the prompt so the model can react to maintainer feedback.

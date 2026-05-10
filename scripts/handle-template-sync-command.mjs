@@ -214,10 +214,11 @@ async function handleTemplateSyncCommand({ event, command, api, repoFullName, bo
     priorGenerationSummaries,
     drift,
   });
+  const openAiApiKey = requireEnv("OPENAI_API_KEY");
   const generationPlan = process.env.TEMPLATE_SYNC_GENERATION_MOCK_RESPONSE
     ? validateGenerationPlan(JSON.parse(process.env.TEMPLATE_SYNC_GENERATION_MOCK_RESPONSE))
     : await callOpenAiForGeneration({
-        apiKey: requireEnv("OPENAI_API_KEY"),
+        apiKey: openAiApiKey,
         model: process.env.OPENAI_MODEL || "gpt-5.5",
         prompt,
       });

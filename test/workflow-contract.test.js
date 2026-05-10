@@ -78,6 +78,10 @@ test("comment workflow supports approve revise decline with bot-token pushes", (
   assert.match(script, /templateSyncAlreadyCommented/);
   assert.match(script, /OPENAI_API_KEY/);
   assert.ok(
+    script.indexOf('const openAiApiKey = requireEnv("OPENAI_API_KEY");') <
+      script.indexOf("process.env.TEMPLATE_SYNC_GENERATION_MOCK_RESPONSE"),
+  );
+  assert.ok(
     script.indexOf("if (failedValidationResults.length > 0)") <
       script.lastIndexOf("commitAndPushIfNeeded({ pullRequest, migrationId, mode: command.action })"),
   );

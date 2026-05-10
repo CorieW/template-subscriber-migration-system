@@ -78,15 +78,23 @@ test("parses approve, revise, and decline commands with raw instructions", () =>
     action: "approve",
     instructions: "Prefer the existing router.",
   });
+  assert.deepEqual(parseTemplateSyncCommand("/template-sync approve Prefer the existing router."), {
+    action: "approve",
+    instructions: "Prefer the existing router.",
+  });
   assert.deepEqual(parseTemplateSyncCommand("/template-sync revise\nUse a smaller helper."), {
     action: "revise",
     instructions: "Use a smaller helper.",
+  });
+  assert.deepEqual(parseTemplateSyncCommand("/template-sync revise Use a smaller helper.\nKeep generated tests."), {
+    action: "revise",
+    instructions: "Use a smaller helper.\n\nKeep generated tests.",
   });
   assert.deepEqual(parseTemplateSyncCommand("/template-sync decline"), {
     action: "decline",
     instructions: "",
   });
-  assert.equal(parseTemplateSyncCommand("/template-sync approve inline text"), null);
+  assert.equal(parseTemplateSyncCommand("/template-sync maybe"), null);
 });
 
 test("checks allowed commenter permissions", () => {

@@ -49,12 +49,12 @@ npm exec --yes --package "$TEMPLATE_SYNC_PACKAGE" -- handle-template-sync-comman
 
 Environment:
 
-| Name                                     | Required               | Description                                              |
-| ---------------------------------------- | ---------------------- | -------------------------------------------------------- |
-| `GITHUB_REPOSITORY`                      | Yes                    | Subscriber repository in `OWNER/REPO` form.              |
-| `GITHUB_EVENT_PATH`                      | Yes                    | GitHub event payload path.                               |
-| `TEMPLATE_SYNC_BOT_TOKEN`                | Yes                    | Bot token for checkout, push, comments, and variables.   |
-| `TEMPLATE_SYNC_DEFAULT_UPSTREAM_REPO`    | Yes                    | Default template repository.                             |
-| `OPENAI_API_KEY`                         | Yes for approve/revise | API key for generation.                                  |
-| `OPENAI_MODEL`                           | No                     | Generation model. Defaults to `gpt-5.5`.                 |
-| `TEMPLATE_SYNC_GENERATION_MOCK_RESPONSE` | No                     | JSON plan used for local or test runs instead of OpenAI. |
+| Name                                     | Required               | Description                                                                                                                                                       |
+| ---------------------------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GITHUB_REPOSITORY`                      | Yes                    | Subscriber repository in `OWNER/REPO` form.                                                                                                                       |
+| `GITHUB_EVENT_PATH`                      | Yes                    | GitHub event payload path.                                                                                                                                        |
+| `TEMPLATE_SYNC_BOT_TOKEN`                | Yes                    | Bot token for checkout, push, comments, and variables.                                                                                                            |
+| `TEMPLATE_SYNC_DEFAULT_UPSTREAM_REPO`    | Yes                    | Default template repository.                                                                                                                                      |
+| `OPENAI_API_KEY`                         | Yes for approve/revise | API key for generation.                                                                                                                                           |
+| `OPENAI_MODEL`                           | No                     | Generation model. Defaults to `gpt-5.5`.                                                                                                                          |
+| `TEMPLATE_SYNC_GENERATION_MOCK_RESPONSE` | No                     | JSON plan used for local or test runs instead of OpenAI. `OPENAI_API_KEY` is still required for approve/revise so missing production configuration fails clearly. |
