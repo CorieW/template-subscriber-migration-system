@@ -132,6 +132,8 @@ test("release workflow uses changesets and can deploy docs manually", () => {
   assert.match(workflow, /pull-requests: write/);
   assert.match(workflow, /uses: changesets\/action@v1/);
   assert.match(workflow, /publish: npm run release/);
+  assert.match(workflow, /title: "chore\(release\): version packages"/);
+  assert.match(workflow, /commit: "chore\(release\): version packages"/);
   assert.match(workflow, /NPM_TOKEN: \$\{\{ secrets\.NPM_TOKEN \}\}/);
   assert.match(workflow, /workflow_dispatch:/);
   assert.match(workflow, /deploy_docs:/);
