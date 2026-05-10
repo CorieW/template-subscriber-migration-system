@@ -180,7 +180,7 @@ async function main() {
     ? validateGenerationPlan(JSON.parse(process.env.TEMPLATE_SYNC_GENERATION_MOCK_RESPONSE))
     : await callOpenAiForGeneration({
         apiKey: requireEnv("OPENAI_API_KEY"),
-        model: process.env.OPENAI_MODEL || "gpt-4.1",
+        model: process.env.OPENAI_MODEL || "gpt-5.5",
         prompt,
       });
 

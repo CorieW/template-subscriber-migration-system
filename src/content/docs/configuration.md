@@ -31,7 +31,7 @@ Set these in repositories that receive template migrations with `.github/workflo
 | ------------------------------------- | -------- | -------------------------------------------------------------------------------------- |
 | `TEMPLATE_SYNC_PACKAGE`               | Yes      | Package spec installed by `npm exec`, such as an npm version, git URL, or tarball URL. |
 | `TEMPLATE_SYNC_DEFAULT_UPSTREAM_REPO` | Yes      | Default upstream template repository in `OWNER/REPO` form.                             |
-| `OPENAI_MODEL`                        | No       | Model used for generation. Defaults to `gpt-4.1` in the workflow example.              |
+| `OPENAI_MODEL`                        | No       | Model used for generation. Defaults to `gpt-5.5` in the workflow example.              |
 
 ### Secrets
 
