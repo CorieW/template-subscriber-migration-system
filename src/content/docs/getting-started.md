@@ -76,4 +76,4 @@ With guidance:
 Keep the subscriber theme and preserve the existing analytics adapter.
 ```
 
-The command workflow does not run generated repository `package.json` scripts while `OPENAI_API_KEY` or GitHub tokens are present. Use normal PR CI or local review to validate the generated branch after it is pushed.
+The command workflow does not run generated repository `package.json` scripts while `OPENAI_API_KEY` or GitHub tokens are present. It also rejects generated edits outside the migration bundle and blocks execution-sensitive paths such as workflow files and package manifests. Use normal PR CI or local review to validate the generated branch after it is pushed.

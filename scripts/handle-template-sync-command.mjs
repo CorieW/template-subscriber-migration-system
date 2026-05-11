@@ -10,7 +10,11 @@ import {
 } from "../src/template-sync/commands.js";
 import { downloadBundleAsset, getReleaseByTag } from "../src/template-sync/releases.js";
 import { readRepoVariables, writeSubscriberStateTransition } from "../src/template-sync/repo-vars.js";
-import { collectPriorGenerationSummaries, collectRepoContext } from "../src/template-sync/repo-context.js";
+import {
+  affectedBundlePaths,
+  collectPriorGenerationSummaries,
+  collectRepoContext,
+} from "../src/template-sync/repo-context.js";
 import { scoreDrift } from "../src/template-sync/drift.js";
 import { buildGenerationPrompt, callOpenAiForGeneration } from "../src/template-sync/openai.js";
 import { applyGenerationPlan, validateGenerationPlan } from "../src/template-sync/generation-contract.js";
@@ -244,6 +248,7 @@ async function handleTemplateSyncCommand({ event, command, api, repoFullName, bo
   checkoutPullRequestBranch({ repoFullName, pullRequest, botToken });
 
   const root = process.cwd();
+  const allowedOperationPaths = affectedBundlePaths(bundle);
   const repoContext = collectRepoContext({ root, bundle });
   const drift = scoreDrift({ root, bundle });
   const prompt = buildGenerationPrompt({
@@ -253,17 +258,21 @@ async function handleTemplateSyncCommand({ event, command, api, repoFullName, bo
     instructions: command.instructions,
     priorGenerationSummaries,
     drift,
+    allowedOperationPaths,
   });
   const openAiApiKey = requireEnv("OPENAI_API_KEY");
   const generationPlan = process.env.TEMPLATE_SYNC_GENERATION_MOCK_RESPONSE
-    ? validateGenerationPlan(JSON.parse(process.env.TEMPLATE_SYNC_GENERATION_MOCK_RESPONSE))
+    ? validateGenerationPlan(JSON.parse(process.env.TEMPLATE_SYNC_GENERATION_MOCK_RESPONSE), {
+        allowedPaths: allowedOperationPaths,
+      })
     : await callOpenAiForGeneration({
         apiKey: openAiApiKey,
         model: process.env.OPENAI_MODEL || "gpt-5.5",
         prompt,
+        allowedPaths: allowedOperationPaths,
       });
 
-  applyGenerationPlan(generationPlan, { root });
+  applyGenerationPlan(generationPlan, { root, allowedPaths: allowedOperationPaths });
   const validationResults = skippedPrivilegedValidationResults();
   const changedFiles = uniqueSorted(gitChangedFiles());
 

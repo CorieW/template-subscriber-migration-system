@@ -2,4 +2,4 @@
 "template-subscriber-migration-system": patch
 ---
 
-Prevent generated subscriber repository code from running in the secret-bearing command workflow.
+Constrain generated subscriber operations to migration bundle paths, and block generated edits to workflow and package execution surfaces.

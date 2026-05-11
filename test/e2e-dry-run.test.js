@@ -74,16 +74,22 @@ test("dry-run publish subscribe approve revise lifecycle with mocked generation"
     instructions: approve.instructions,
     priorGenerationSummaries: [],
     drift: { level: "low", warnings: [] },
+    allowedOperationPaths: ["src/app.ts"],
   });
   assert.equal(approvePrompt.adminInstructions, "Keep the subscriber theme.");
+  assert.deepEqual(approvePrompt.allowedOperationPaths, ["src/app.ts"]);
 
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "template-sync-e2e-"));
-  const initialPlan = validateGenerationPlan({
-    summary: "Created subscriber migration",
-    operations: [{ action: "create", path: "src/app.ts", content: "export const value = 1;\n" }],
-    driftWarnings: [],
-  });
-  assert.deepEqual(applyGenerationPlan(initialPlan, { root }), ["src/app.ts"]);
+  const allowedPaths = ["src/app.ts"];
+  const initialPlan = validateGenerationPlan(
+    {
+      summary: "Created subscriber migration",
+      operations: [{ action: "create", path: "src/app.ts", content: "export const value = 1;\n" }],
+      driftWarnings: [],
+    },
+    { allowedPaths },
+  );
+  assert.deepEqual(applyGenerationPlan(initialPlan, { root, allowedPaths }), ["src/app.ts"]);
 
   const revise = parseTemplateSyncCommand("/template-sync revise\nUse value 2 instead.");
   const revisePrompt = buildGenerationPrompt({
@@ -98,15 +104,19 @@ test("dry-run publish subscribe approve revise lifecycle with mocked generation"
     instructions: revise.instructions,
     priorGenerationSummaries: [{ body: "Created subscriber migration" }],
     drift: { level: "low", warnings: [] },
+    allowedOperationPaths: allowedPaths,
   });
   assert.equal(revisePrompt.adminInstructions, "Use value 2 instead.");
   assert.equal(revisePrompt.priorGenerationSummaries.length, 1);
 
-  const revisionPlan = validateGenerationPlan({
-    summary: "Revised subscriber migration",
-    operations: [{ action: "update", path: "src/app.ts", content: "export const value = 2;\n" }],
-    driftWarnings: [],
-  });
-  applyGenerationPlan(revisionPlan, { root });
+  const revisionPlan = validateGenerationPlan(
+    {
+      summary: "Revised subscriber migration",
+      operations: [{ action: "update", path: "src/app.ts", content: "export const value = 2;\n" }],
+      driftWarnings: [],
+    },
+    { allowedPaths },
+  );
+  applyGenerationPlan(revisionPlan, { root, allowedPaths });
   assert.equal(fs.readFileSync(path.join(root, "src/app.ts"), "utf8"), "export const value = 2;\n");
 });

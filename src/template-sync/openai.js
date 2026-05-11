@@ -23,14 +23,23 @@ export function buildMigrationSummaryPrompt({ bundle }) {
   };
 }
 
-export function buildGenerationPrompt({ mode, bundle, repoContext, instructions, priorGenerationSummaries, drift }) {
+export function buildGenerationPrompt({
+  mode,
+  bundle,
+  repoContext,
+  instructions,
+  priorGenerationSummaries,
+  drift,
+  allowedOperationPaths,
+}) {
   return {
     mode,
     contract: {
       description:
-        "Return only JSON matching the provided schema. Use full file contents for every create/update operation. Do not return patches or markdown.",
+        "Return only JSON matching the provided schema. Use full file contents for every create/update operation. Do not return patches or markdown. Operation paths must be listed in allowedOperationPaths.",
       schema: GENERATION_RESPONSE_SCHEMA,
     },
+    allowedOperationPaths: allowedOperationPaths || [],
     migrationBundle: bundle,
     subscriberRepoContext: repoContext,
     adminInstructions: instructions || "",
@@ -108,7 +117,7 @@ export async function callOpenAiForMigrationSummary({ apiKey, model, prompt, fet
   return validateMigrationSummaryOutput(JSON.parse(outputText));
 }
 
-export async function callOpenAiForGeneration({ apiKey, model, prompt, fetchImpl = globalThis.fetch }) {
+export async function callOpenAiForGeneration({ apiKey, model, prompt, allowedPaths, fetchImpl = globalThis.fetch }) {
   const response = await fetchImpl("https://api.openai.com/v1/responses", {
     method: "POST",
     headers: {
@@ -147,5 +156,5 @@ export async function callOpenAiForGeneration({ apiKey, model, prompt, fetchImpl
   if (!outputText) {
     throw new Error("OpenAI response did not contain output text");
   }
-  return validateGenerationPlan(JSON.parse(outputText));
+  return validateGenerationPlan(JSON.parse(outputText), { allowedPaths });
 }

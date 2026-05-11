@@ -106,7 +106,7 @@ test("comment workflow supports approve revise decline with bot-token pushes", (
       script.indexOf("process.env.TEMPLATE_SYNC_GENERATION_MOCK_RESPONSE"),
   );
   assert.ok(
-    script.indexOf("applyGenerationPlan(generationPlan, { root })") <
+    script.indexOf("applyGenerationPlan(generationPlan, { root, allowedPaths: allowedOperationPaths })") <
       script.lastIndexOf(
         "commitAndPushIfNeeded({ repoFullName, pullRequest, botToken, migrationId, mode: command.action })",
       ),

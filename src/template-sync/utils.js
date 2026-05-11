@@ -61,7 +61,10 @@ export function safeRelativePath(filePath) {
     normalized.startsWith("../") ||
     normalized === ".." ||
     path.posix.isAbsolute(normalized) ||
-    normalized.startsWith(".git/")
+    normalized === ".git" ||
+    normalized.startsWith(".git/") ||
+    normalized.includes("/.git/") ||
+    normalized.endsWith("/.git")
   ) {
     throw new Error(`Unsafe file operation path: ${filePath}`);
   }

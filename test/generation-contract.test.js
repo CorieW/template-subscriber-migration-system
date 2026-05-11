@@ -59,11 +59,88 @@ test("rejects malformed model output", () => {
     () =>
       validateGenerationPlan({
         summary: "bad",
+        operations: [{ action: "delete", path: ".git" }],
+      }),
+    /Unsafe file operation path/,
+  );
+  assert.throws(
+    () =>
+      validateGenerationPlan({
+        summary: "bad",
+        operations: [{ action: "delete", path: "nested/.git/config" }],
+      }),
+    /Unsafe file operation path/,
+  );
+  assert.throws(
+    () =>
+      validateGenerationPlan({
+        summary: "bad",
         operations: [{ action: "delete", path: "remove.txt", content: "unexpected" }],
       }),
     /content must be null or omitted/,
   );
   assert.throws(() => parseAndValidateGenerationPlan("not json"), /Unexpected token/);
+});
+
+test("rejects generation paths outside bundle scope or execution-sensitive files", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "template-sync-"));
+  const allowedPaths = ["src/app.ts"];
+  const plan = validateGenerationPlan(
+    {
+      summary: "Update file",
+      operations: [{ action: "update", path: "src/app.ts", content: "export const ok = true;\n" }],
+      driftWarnings: [],
+    },
+    { allowedPaths },
+  );
+
+  assert.deepEqual(applyGenerationPlan(plan, { root, allowedPaths }), ["src/app.ts"]);
+  assert.throws(
+    () =>
+      validateGenerationPlan(
+        {
+          summary: "Bad path",
+          operations: [{ action: "create", path: "src/extra.ts", content: "export const nope = true;\n" }],
+          driftWarnings: [],
+        },
+        { allowedPaths },
+      ),
+    /outside the migration bundle/,
+  );
+  assert.throws(
+    () =>
+      validateGenerationPlan(
+        {
+          summary: "Bad package script path",
+          operations: [{ action: "update", path: "packages/app/package.json", content: "{}\n" }],
+          driftWarnings: [],
+        },
+        { allowedPaths: ["packages/app/package.json"] },
+      ),
+    /execution-sensitive path/,
+  );
+  assert.throws(
+    () =>
+      validateGenerationPlan(
+        {
+          summary: "Bad workflow path",
+          operations: [{ action: "create", path: ".github/workflows/ci.yml", content: "name: ci\n" }],
+          driftWarnings: [],
+        },
+        { allowedPaths: [".github/workflows/ci.yml"] },
+      ),
+    /execution-sensitive path/,
+  );
+  assert.throws(
+    () =>
+      applyGenerationPlan(
+        {
+          operations: [{ action: "create", path: "src/extra.ts", content: "export const nope = true;\n" }],
+        },
+        { root, allowedPaths },
+      ),
+    /outside the migration bundle/,
+  );
 });
 
 test("reports drift warnings but does not block generation", () => {
