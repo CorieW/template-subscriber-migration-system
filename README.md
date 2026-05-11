@@ -1,6 +1,6 @@
 # Template Subscriber Migration System
 
-<img width="1672" height="941" alt="image" src="https://github.com/user-attachments/assets/a74a6c48-a448-4f99-913f-d50285cc405c" />
+<img width="1672" height="941" alt="image" src="https://github.com/user-attachments/assets/94b7dbd7-eca0-4aaa-abc8-6fd1969fd496" />
 <br>
 GitHub Actions helpers for publishing template changes as migration bundles and letting subscriber repositories opt into subscriber-specific migration PRs.
 <br><br>
