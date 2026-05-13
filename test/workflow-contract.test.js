@@ -90,6 +90,8 @@ test("comment workflow supports approve revise decline with bot-token pushes", (
   assert.ok(workflow.indexOf("Install template sync package") < workflow.indexOf("OPENAI_API_KEY"));
   assert.match(script, /parseTemplateSyncCommand/);
   assert.match(script, /hasWritePermission/);
+  assert.match(script, /assertTemplateMigrationPullRequest/);
+  assert.match(script, /migrationBranchName/);
   assert.match(script, /writeSubscriberStateTransition\(api, repoFullName, "declined"/);
   assert.match(script, /writeSubscriberStateTransition\(api, repoFullName, "applied"/);
   assert.match(script, /ls-files", "--modified", "--deleted", "--others", "--exclude-standard"/);
@@ -107,14 +109,14 @@ test("comment workflow supports approve revise decline with bot-token pushes", (
   );
   assert.ok(
     script.indexOf("applyGenerationPlan(generationPlan, { root })") <
-      script.lastIndexOf(
-        "commitAndPushIfNeeded({ repoFullName, pullRequest, botToken, migrationId, mode: command.action })",
-      ),
+      script.lastIndexOf("commitAndPushIfNeeded({ repoFullName, botToken, migrationId, mode: command.action })"),
   );
   assert.match(script, /Buffer\.from\(`x-access-token:\$\{token\}`\)/);
   assert.match(script, /GIT_CONFIG_KEY_0: "http\.https:\/\/github\.com\/\.extraheader"/);
   assert.doesNotMatch(script, /remote", "set-url", "origin", `https:\/\/x-access-token/);
-  assert.match(script, /push", repositoryHttpsUrl\(repoFullName\), `HEAD:\$\{pullRequest\.head\.ref\}`/);
+  assert.match(script, /fetch", repoUrl, `\$\{branchName\}:template-sync-worktree`/);
+  assert.match(script, /push", repositoryHttpsUrl\(repoFullName\), `HEAD:\$\{branchName\}`/);
+  assert.doesNotMatch(script, /`HEAD:\$\{pullRequest\.head\.ref\}`/);
 });
 
 test("package exposes installable command binaries", () => {

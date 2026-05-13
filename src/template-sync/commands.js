@@ -3,6 +3,7 @@ import { normalizeNewlines } from "./utils.js";
 
 export const TEMPLATE_SYNC_COMMANDS = Object.freeze(["approve", "revise", "decline"]);
 export const ALLOWED_PERMISSIONS = Object.freeze(["write", "maintain", "admin"]);
+export const TEMPLATE_MIGRATION_BRANCH_PREFIX = "template-migrations/";
 
 export function parseTemplateSyncCommand(commentBody) {
   const normalized = normalizeNewlines(commentBody).trimEnd();
@@ -28,12 +29,32 @@ export function extractMigrationIdFromPr({ body = "", headRef = "" }) {
   if (marker?.[1]?.startsWith(MIGRATION_TAG_PREFIX)) {
     return marker[1];
   }
-  const branchPrefix = "template-migrations/";
-  if (headRef.startsWith(branchPrefix)) {
-    const migrationId = headRef.slice(branchPrefix.length);
+  if (headRef.startsWith(TEMPLATE_MIGRATION_BRANCH_PREFIX)) {
+    const migrationId = headRef.slice(TEMPLATE_MIGRATION_BRANCH_PREFIX.length);
     if (migrationId.startsWith(MIGRATION_TAG_PREFIX)) {
       return migrationId;
     }
   }
   return null;
+}
+
+export function migrationBranchName(migrationId) {
+  if (!migrationId?.startsWith(MIGRATION_TAG_PREFIX)) {
+    throw new Error(`Invalid template migration id: ${migrationId || "<empty>"}`);
+  }
+  return `${TEMPLATE_MIGRATION_BRANCH_PREFIX}${migrationId}`;
+}
+
+export function assertTemplateMigrationPullRequest(pullRequest, repoFullName, migrationId) {
+  const expectedBranch = migrationBranchName(migrationId);
+  const headRepoFullName = pullRequest?.head?.repo?.full_name || "";
+  const headRef = pullRequest?.head?.ref || "";
+  if (headRepoFullName.toLowerCase() !== String(repoFullName || "").toLowerCase()) {
+    throw new Error(
+      `Template migration PR must be opened from ${repoFullName}, got ${headRepoFullName || "<unknown>"}`,
+    );
+  }
+  if (headRef !== expectedBranch) {
+    throw new Error(`Template migration PR head branch must be ${expectedBranch}, got ${headRef || "<unknown>"}`);
+  }
 }

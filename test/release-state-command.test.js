@@ -10,6 +10,8 @@ import {
   parseTemplateSyncCommand,
   hasWritePermission,
   extractMigrationIdFromPr,
+  migrationBranchName,
+  assertTemplateMigrationPullRequest,
 } from "../src/template-sync/commands.js";
 import { STATE_VARIABLES } from "../src/template-sync/constants.js";
 
@@ -119,5 +121,52 @@ test("extracts migration ids from PR marker or branch name", () => {
       headRef: "template-migrations/template-migration/pr-6-def",
     }),
     "template-migration/pr-6-def",
+  );
+});
+
+test("requires command PRs to use the expected subscriber migration branch", () => {
+  const migrationId = "template-migration/pr-7-abc";
+  const expectedBranch = "template-migrations/template-migration/pr-7-abc";
+
+  assert.equal(migrationBranchName(migrationId), expectedBranch);
+  assert.doesNotThrow(() =>
+    assertTemplateMigrationPullRequest(
+      {
+        head: {
+          ref: expectedBranch,
+          repo: { full_name: "acme/subscriber" },
+        },
+      },
+      "Acme/Subscriber",
+      migrationId,
+    ),
+  );
+  assert.throws(
+    () =>
+      assertTemplateMigrationPullRequest(
+        {
+          head: {
+            ref: expectedBranch,
+            repo: { full_name: "someone/fork" },
+          },
+        },
+        "acme/subscriber",
+        migrationId,
+      ),
+    /must be opened from acme\/subscriber/,
+  );
+  assert.throws(
+    () =>
+      assertTemplateMigrationPullRequest(
+        {
+          head: {
+            ref: "main",
+            repo: { full_name: "acme/subscriber" },
+          },
+        },
+        "acme/subscriber",
+        migrationId,
+      ),
+    /head branch must be template-migrations\/template-migration\/pr-7-abc/,
   );
 });

@@ -7,6 +7,8 @@ import {
   parseTemplateSyncCommand,
   hasWritePermission,
   extractMigrationIdFromPr,
+  assertTemplateMigrationPullRequest,
+  migrationBranchName,
 } from "../src/template-sync/commands.js";
 import { downloadBundleAsset, getReleaseByTag } from "../src/template-sync/releases.js";
 import { readRepoVariables, writeSubscriberStateTransition } from "../src/template-sync/repo-vars.js";
@@ -142,12 +144,13 @@ function issueHasMigrationLabel(issue) {
   return (issue.labels || []).some((label) => (label.name || label) === MIGRATION_LABEL);
 }
 
-function checkoutPullRequestBranch({ repoFullName, pullRequest, botToken }) {
+function checkoutPullRequestBranch({ repoFullName, migrationId, botToken }) {
   runGit(["config", "user.name", "template-sync-bot"]);
   runGit(["config", "user.email", "template-sync-bot@users.noreply.github.com"]);
   const repoUrl = repositoryHttpsUrl(repoFullName);
+  const branchName = migrationBranchName(migrationId);
   runGit(["remote", "set-url", "origin", repoUrl]);
-  runGitWithAuth(["fetch", repoUrl, `${pullRequest.head.ref}:template-sync-worktree`], {
+  runGitWithAuth(["fetch", repoUrl, `${branchName}:template-sync-worktree`], {
     token: botToken,
     stdio: "inherit",
   });
@@ -159,16 +162,17 @@ function gitChangedFiles() {
   return output ? output.split("\n").filter(Boolean) : [];
 }
 
-function commitAndPushIfNeeded({ repoFullName, pullRequest, botToken, migrationId, mode }) {
+function commitAndPushIfNeeded({ repoFullName, botToken, migrationId, mode }) {
   const changedFiles = gitChangedFiles();
   if (changedFiles.length === 0) {
     return [];
   }
+  const branchName = migrationBranchName(migrationId);
   runGit(["add", "--all"]);
   runGit(["commit", "-m", `${mode === "revise" ? "Revise" : "Apply"} template migration ${migrationId}`], {
     stdio: "inherit",
   });
-  runGitWithAuth(["push", repositoryHttpsUrl(repoFullName), `HEAD:${pullRequest.head.ref}`], {
+  runGitWithAuth(["push", repositoryHttpsUrl(repoFullName), `HEAD:${branchName}`], {
     token: botToken,
     stdio: "inherit",
   });
@@ -201,6 +205,7 @@ async function handleTemplateSyncCommand({ event, command, api, repoFullName, bo
   if (!migrationId) {
     throw new Error(`Could not map PR #${issueNumber} to a template migration id.`);
   }
+  assertTemplateMigrationPullRequest(pullRequest, repoFullName, migrationId);
 
   const state = await readRepoVariables(api, repoFullName);
   const upstreamRepoFullName = state.TEMPLATE_SYNC_UPSTREAM_REPO || requireEnv("TEMPLATE_SYNC_DEFAULT_UPSTREAM_REPO");
@@ -241,7 +246,7 @@ async function handleTemplateSyncCommand({ event, command, api, repoFullName, bo
     );
   }
 
-  checkoutPullRequestBranch({ repoFullName, pullRequest, botToken });
+  checkoutPullRequestBranch({ repoFullName, migrationId, botToken });
 
   const root = process.cwd();
   const repoContext = collectRepoContext({ root, bundle });
@@ -267,7 +272,7 @@ async function handleTemplateSyncCommand({ event, command, api, repoFullName, bo
   const validationResults = skippedPrivilegedValidationResults();
   const changedFiles = uniqueSorted(gitChangedFiles());
 
-  commitAndPushIfNeeded({ repoFullName, pullRequest, botToken, migrationId, mode: command.action });
+  commitAndPushIfNeeded({ repoFullName, botToken, migrationId, mode: command.action });
   await writeSubscriberStateTransition(api, repoFullName, "applied", migrationId);
   await addIssueComment(
     api,
