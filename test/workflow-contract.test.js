@@ -79,6 +79,14 @@ test("comment workflow supports approve revise decline with bot-token pushes", (
   assert.match(workflow, /persist-credentials: false/);
   assert.match(workflow, /OPENAI_API_KEY/);
   assert.match(workflow, /TEMPLATE_SYNC_PACKAGE:/);
+  assert.match(
+    workflow,
+    /TEMPLATE_SYNC_GENERATION_HARNESS_COMMAND: \$\{\{ vars\.TEMPLATE_SYNC_GENERATION_HARNESS_COMMAND \}\}/,
+  );
+  assert.match(
+    workflow,
+    /TEMPLATE_SYNC_GENERATION_HARNESS_ENV_ALLOWLIST: \$\{\{ vars\.TEMPLATE_SYNC_GENERATION_HARNESS_ENV_ALLOWLIST \}\}/,
+  );
   assert.match(workflow, /Change this to pin a version, git URL, or tarball package spec/);
   assert.match(workflow, /TEMPLATE_SYNC_PACKAGE: template-subscriber-migration-system@latest/);
   assert.match(
@@ -99,14 +107,23 @@ test("comment workflow supports approve revise decline with bot-token pushes", (
   assert.match(validation, /generated repository code is untrusted/);
   assert.doesNotMatch(script, /refreshDependencies/);
   assert.doesNotMatch(script, /runValidation/);
+  assert.match(script, /callGenerationHarness/);
+  assert.match(script, /TEMPLATE_SYNC_GENERATION_HARNESS_COMMAND/);
+  assert.match(script, /Generation harness modified the working tree directly/);
   assert.match(script, /renderCommandFailureComment/);
   assert.match(script, /templateSyncAlreadyCommented/);
   assert.match(script, /Cannot approve after initial generation/);
   assert.match(script, /OPENAI_API_KEY/);
-  assert.ok(
-    script.indexOf('const openAiApiKey = requireEnv("OPENAI_API_KEY");') <
-      script.indexOf("process.env.TEMPLATE_SYNC_GENERATION_MOCK_RESPONSE"),
-  );
+  {
+    const mockIndex = script.indexOf("process.env.TEMPLATE_SYNC_GENERATION_MOCK_RESPONSE");
+    const mockOpenAiKeyIndex = script.indexOf('requireEnv("OPENAI_API_KEY")', mockIndex);
+    const mockValidationIndex = script.indexOf(
+      "validateGenerationPlan(JSON.parse(process.env.TEMPLATE_SYNC_GENERATION_MOCK_RESPONSE))",
+      mockIndex,
+    );
+    assert.ok(mockOpenAiKeyIndex > mockIndex);
+    assert.ok(mockOpenAiKeyIndex < mockValidationIndex);
+  }
   assert.ok(
     script.indexOf("applyGenerationPlan(generationPlan, { root })") <
       script.lastIndexOf("commitAndPushIfNeeded({ repoFullName, botToken, migrationId, mode: command.action })"),

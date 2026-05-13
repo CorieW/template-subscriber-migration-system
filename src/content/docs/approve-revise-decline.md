@@ -55,8 +55,10 @@ Close the migration PR and mark the migration declined:
 
 ## Validation Behavior
 
-The command workflow applies generated file operations locally, commits, pushes, and comments with a summary. It does not refresh lockfiles or run subscriber `package.json` scripts because generated repository code is untrusted while `OPENAI_API_KEY` and GitHub tokens are present.
+The command workflow applies generated file operations locally, commits, pushes, and comments with a summary. It does not refresh lockfiles or run subscriber `package.json` scripts because generated repository code is untrusted while model credentials and GitHub tokens are present.
 
-If a recognized command cannot complete, the workflow comments on the PR with the failure message. This includes missing configuration such as `OPENAI_API_KEY`, upstream release lookup failures, OpenAI API failures, malformed generation output, checkout failures, and push failures. Errors that happen before the workflow can read the issue event or bot token still appear only in the GitHub Actions logs.
+Approve and revise use direct OpenAI generation by default. Set `TEMPLATE_SYNC_GENERATION_HARNESS_COMMAND` to route generation through an external harness such as a local wrapper around opencode. The harness receives prompt JSON on stdin and must return the same structured generation plan JSON that direct OpenAI generation returns. It must not edit the checkout directly. Sensitive environment variables are stripped before the harness starts unless their names are listed in `TEMPLATE_SYNC_GENERATION_HARNESS_ENV_ALLOWLIST`; GitHub and template sync tokens are never passed through.
+
+If a recognized command cannot complete, the workflow comments on the PR with the failure message. This includes missing configuration such as `OPENAI_API_KEY`, upstream release lookup failures, OpenAI or harness failures, malformed generation output, checkout failures, and push failures. Errors that happen before the workflow can read the issue event or bot token still appear only in the GitHub Actions logs.
 
 Run normal PR CI or local checks against the generated branch after the bot pushes it. Keep those PR checks free of repository secrets when they can execute generated code.

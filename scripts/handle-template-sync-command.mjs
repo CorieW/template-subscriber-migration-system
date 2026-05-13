@@ -14,6 +14,7 @@ import { downloadBundleAsset, getReleaseByTag } from "../src/template-sync/relea
 import { readRepoVariables, writeSubscriberStateTransition } from "../src/template-sync/repo-vars.js";
 import { collectPriorGenerationSummaries, collectRepoContext } from "../src/template-sync/repo-context.js";
 import { scoreDrift } from "../src/template-sync/drift.js";
+import { callGenerationHarness } from "../src/template-sync/generation-harness.js";
 import { buildGenerationPrompt, callOpenAiForGeneration } from "../src/template-sync/openai.js";
 import { applyGenerationPlan, validateGenerationPlan } from "../src/template-sync/generation-contract.js";
 import { skippedPrivilegedValidationResults } from "../src/template-sync/validation.js";
@@ -170,6 +171,13 @@ function gitChangedFiles() {
   return output ? output.split("\n").filter(Boolean) : [];
 }
 
+function assertCleanWorktree(message) {
+  const changedFiles = gitChangedFiles();
+  if (changedFiles.length > 0) {
+    throw new Error(`${message}: ${changedFiles.join(", ")}`);
+  }
+}
+
 function commitAndPushIfNeeded({ repoFullName, botToken, migrationId, mode }) {
   const changedFiles = gitChangedFiles();
   if (changedFiles.length === 0) {
@@ -185,6 +193,27 @@ function commitAndPushIfNeeded({ repoFullName, botToken, migrationId, mode }) {
     stdio: "inherit",
   });
   return changedFiles;
+}
+
+async function createGenerationPlan({ prompt, root }) {
+  if (process.env.TEMPLATE_SYNC_GENERATION_MOCK_RESPONSE) {
+    requireEnv("OPENAI_API_KEY");
+    return validateGenerationPlan(JSON.parse(process.env.TEMPLATE_SYNC_GENERATION_MOCK_RESPONSE));
+  }
+  if (process.env.TEMPLATE_SYNC_GENERATION_HARNESS_COMMAND) {
+    const plan = await callGenerationHarness({
+      command: process.env.TEMPLATE_SYNC_GENERATION_HARNESS_COMMAND,
+      prompt,
+      cwd: root,
+    });
+    assertCleanWorktree("Generation harness modified the working tree directly; return JSON file operations instead");
+    return plan;
+  }
+  return callOpenAiForGeneration({
+    apiKey: requireEnv("OPENAI_API_KEY"),
+    model: process.env.OPENAI_MODEL || "gpt-5.5",
+    prompt,
+  });
 }
 
 async function handleTemplateSyncCommand({ event, command, api, repoFullName, botToken, issueNumber }) {
@@ -260,6 +289,7 @@ async function handleTemplateSyncCommand({ event, command, api, repoFullName, bo
   checkoutPullRequestBranch({ repoFullName, migrationId, botToken });
 
   const root = process.cwd();
+  assertCleanWorktree("Cannot generate from a dirty worktree");
   const repoContext = collectRepoContext({ root, bundle });
   const drift = scoreDrift({ root, bundle });
   const prompt = buildGenerationPrompt({
@@ -270,14 +300,7 @@ async function handleTemplateSyncCommand({ event, command, api, repoFullName, bo
     priorGenerationSummaries,
     drift,
   });
-  const openAiApiKey = requireEnv("OPENAI_API_KEY");
-  const generationPlan = process.env.TEMPLATE_SYNC_GENERATION_MOCK_RESPONSE
-    ? validateGenerationPlan(JSON.parse(process.env.TEMPLATE_SYNC_GENERATION_MOCK_RESPONSE))
-    : await callOpenAiForGeneration({
-        apiKey: openAiApiKey,
-        model: process.env.OPENAI_MODEL || "gpt-5.5",
-        prompt,
-      });
+  const generationPlan = await createGenerationPlan({ prompt, root });
 
   applyGenerationPlan(generationPlan, { root });
   const validationResults = skippedPrivilegedValidationResults();
