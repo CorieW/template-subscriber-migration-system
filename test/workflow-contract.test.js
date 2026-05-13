@@ -128,7 +128,15 @@ test("package exposes installable command binaries", () => {
     "subscriber-template-sync": "./scripts/subscriber-sync.mjs",
     "handle-template-sync-command": "./scripts/handle-template-sync-command.mjs",
   });
-  assert.deepEqual(packageJson.files, ["scripts/", "src/template-sync/", "README.md"]);
+  assert.deepEqual(packageJson.files, [
+    ".github/workflows/template-migration-command.yml",
+    ".github/workflows/template-publish-migration.yml",
+    ".github/workflows/template-sync.yml",
+    "scripts/",
+    "src/content/docs/",
+    "src/template-sync/",
+    "README.md",
+  ]);
 });
 
 test("ci workflow runs format lint test knip and docs build", () => {

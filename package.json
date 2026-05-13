@@ -14,7 +14,11 @@
     "handle-template-sync-command": "./scripts/handle-template-sync-command.mjs"
   },
   "files": [
+    ".github/workflows/template-migration-command.yml",
+    ".github/workflows/template-publish-migration.yml",
+    ".github/workflows/template-sync.yml",
     "scripts/",
+    "src/content/docs/",
     "src/template-sync/",
     "README.md"
   ],
