@@ -140,6 +140,14 @@ async function loadIssue(api, repoFullName, number) {
   return api.request("GET", `/repos/${repo.owner}/${repo.repo}/issues/${number}`);
 }
 
+async function getAuthenticatedUserLogin(api) {
+  const user = await api.request("GET", "/user");
+  if (!user?.login) {
+    throw new Error("Could not determine trusted template sync bot user.");
+  }
+  return user.login;
+}
+
 function issueHasMigrationLabel(issue) {
   return (issue.labels || []).some((label) => (label.name || label) === MIGRATION_LABEL);
 }
@@ -226,7 +234,10 @@ async function handleTemplateSyncCommand({ event, command, api, repoFullName, bo
     return;
   }
 
-  const priorGenerationSummaries = await collectPriorGenerationSummaries(api, repoFullName, issueNumber);
+  const generationCommentAuthorLogin = await getAuthenticatedUserLogin(api);
+  const priorGenerationSummaries = await collectPriorGenerationSummaries(api, repoFullName, issueNumber, {
+    trustedAuthorLogin: generationCommentAuthorLogin,
+  });
   if (command.action === "approve" && priorGenerationSummaries.length > 0) {
     await addIssueCommentAndThrow(
       api,

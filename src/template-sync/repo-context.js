@@ -5,6 +5,25 @@ import { safeRelativePath, truncate, uniqueSorted } from "./utils.js";
 
 const MAX_CONTEXT_FILE_LENGTH = 120_000;
 
+function sameGitHubLogin(left, right) {
+  return String(left || "").toLowerCase() === String(right || "").toLowerCase();
+}
+
+function hasGenerationSummaryMarker(body) {
+  const [firstLine = ""] = String(body || "")
+    .trimStart()
+    .split(/\r?\n/, 1);
+  return firstLine.trim() === GENERATION_COMMENT_MARKER;
+}
+
+export function isTrustedGenerationSummaryComment(comment, trustedAuthorLogin) {
+  return (
+    Boolean(trustedAuthorLogin) &&
+    sameGitHubLogin(comment.user?.login, trustedAuthorLogin) &&
+    hasGenerationSummaryMarker(comment.body)
+  );
+}
+
 function readFileIfPresent(root, relativePath) {
   const safePath = safeRelativePath(relativePath);
   const target = path.join(root, safePath);
@@ -33,11 +52,14 @@ export function collectRepoContext({ root, bundle }) {
   };
 }
 
-export async function collectPriorGenerationSummaries(api, repoFullName, issueNumber) {
+export async function collectPriorGenerationSummaries(api, repoFullName, issueNumber, { trustedAuthorLogin } = {}) {
+  if (!trustedAuthorLogin) {
+    throw new Error("Cannot collect prior generation summaries without a trusted generation comment author.");
+  }
   const [owner, repo] = repoFullName.split("/");
   const comments = await api.paginate(`/repos/${owner}/${repo}/issues/${issueNumber}/comments`, { per_page: "100" });
   return comments
-    .filter((comment) => String(comment.body || "").includes(GENERATION_COMMENT_MARKER))
+    .filter((comment) => isTrustedGenerationSummaryComment(comment, trustedAuthorLogin))
     .map((comment) => ({
       author: comment.user?.login || "",
       createdAt: comment.created_at,
