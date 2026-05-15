@@ -20,7 +20,9 @@ permissions:
 env:
   # Change this to pin a version, git URL, or tarball package spec.
   TEMPLATE_SYNC_PACKAGE: template-subscriber-migration-system@latest
-  OPENAI_MODEL: gpt-5.5
+  # Supported values: openai, gemini, anthropic.
+  TEMPLATE_SYNC_AI_PROVIDER: openai
+  TEMPLATE_SYNC_AI_MODEL: gpt-5.5
 
 jobs:
   publish:
@@ -46,6 +48,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           TEMPLATE_SYNC_GENERATE_SUMMARY: ${{ inputs.generate_summary }}
+          TEMPLATE_SYNC_AI_PROVIDER: ${{ env.TEMPLATE_SYNC_AI_PROVIDER }}
+          TEMPLATE_SYNC_AI_MODEL: ${{ env.TEMPLATE_SYNC_AI_MODEL }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_MODEL: ${{ env.OPENAI_MODEL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: publish-template-migration "${{ inputs.pr_number }}"
