@@ -58,7 +58,9 @@ Set required secrets:
 | Secret                              | Purpose                                                               |
 | ----------------------------------- | --------------------------------------------------------------------- |
 | `TEMPLATE_SYNC_BOT_TOKEN`           | Opens PRs, pushes commits, comments, and writes repository variables. |
-| `OPENAI_API_KEY`                    | Generates subscriber-specific migration file operations.              |
+| `OPENAI_API_KEY`                    | Generates file operations when `TEMPLATE_SYNC_AI_PROVIDER=openai`.    |
+| `GEMINI_API_KEY`                    | Generates file operations when `TEMPLATE_SYNC_AI_PROVIDER=gemini`.    |
+| `ANTHROPIC_API_KEY`                 | Generates file operations when `TEMPLATE_SYNC_AI_PROVIDER=anthropic`. |
 | `TEMPLATE_SYNC_UPSTREAM_READ_TOKEN` | Optional token for private upstream release reads.                    |
 
 ## 4. Apply a Migration
@@ -76,4 +78,4 @@ With guidance:
 Keep the subscriber theme and preserve the existing analytics adapter.
 ```
 
-The command workflow does not run generated repository `package.json` scripts while `OPENAI_API_KEY` or GitHub tokens are present. Use normal PR CI or local review to validate the generated branch after it is pushed.
+The command workflow does not run generated repository `package.json` scripts while provider API keys or GitHub tokens are present. Use normal PR CI or local review to validate the generated branch after it is pushed.

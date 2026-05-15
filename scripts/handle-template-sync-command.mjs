@@ -14,7 +14,11 @@ import { downloadBundleAsset, getReleaseByTag } from "../src/template-sync/relea
 import { readRepoVariables, writeSubscriberStateTransition } from "../src/template-sync/repo-vars.js";
 import { collectPriorGenerationSummaries, collectRepoContext } from "../src/template-sync/repo-context.js";
 import { scoreDrift } from "../src/template-sync/drift.js";
-import { buildGenerationPrompt, callOpenAiForGeneration } from "../src/template-sync/openai.js";
+import {
+  buildGenerationPrompt,
+  callAiForGeneration,
+  resolveAiProviderConfig,
+} from "../src/template-sync/ai-provider.js";
 import { applyGenerationPlan, validateGenerationPlan } from "../src/template-sync/generation-contract.js";
 import { skippedPrivilegedValidationResults } from "../src/template-sync/validation.js";
 import {
@@ -27,6 +31,8 @@ import { parseRepo, requireEnv, uniqueSorted } from "../src/template-sync/utils.
 const SENSITIVE_ENV_NAMES = Object.freeze([
   "GITHUB_TOKEN",
   "OPENAI_API_KEY",
+  "GEMINI_API_KEY",
+  "ANTHROPIC_API_KEY",
   "TEMPLATE_SYNC_BOT_TOKEN",
   "TEMPLATE_SYNC_UPSTREAM_READ_TOKEN",
 ]);
@@ -270,12 +276,11 @@ async function handleTemplateSyncCommand({ event, command, api, repoFullName, bo
     priorGenerationSummaries,
     drift,
   });
-  const openAiApiKey = requireEnv("OPENAI_API_KEY");
+  const aiProviderConfig = resolveAiProviderConfig();
   const generationPlan = process.env.TEMPLATE_SYNC_GENERATION_MOCK_RESPONSE
     ? validateGenerationPlan(JSON.parse(process.env.TEMPLATE_SYNC_GENERATION_MOCK_RESPONSE))
-    : await callOpenAiForGeneration({
-        apiKey: openAiApiKey,
-        model: process.env.OPENAI_MODEL || "gpt-5.5",
+    : await callAiForGeneration({
+        providerConfig: aiProviderConfig,
         prompt,
       });
 

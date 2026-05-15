@@ -11,7 +11,7 @@ import {
   buildGenerationPrompt,
   buildMigrationSummaryPrompt,
   validateMigrationSummaryOutput,
-} from "../src/template-sync/openai.js";
+} from "../src/template-sync/ai-provider.js";
 import { applyGenerationPlan, validateGenerationPlan } from "../src/template-sync/generation-contract.js";
 
 function pr(number, publishedAt) {

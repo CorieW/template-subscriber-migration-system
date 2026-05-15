@@ -18,7 +18,8 @@ Optional summary model:
 
 ```yaml
 env:
-  OPENAI_MODEL: gpt-5.5
+  TEMPLATE_SYNC_AI_PROVIDER: openai
+  TEMPLATE_SYNC_AI_MODEL: gpt-5.5
 ```
 
 Required permissions:
@@ -40,7 +41,7 @@ pr_number: 123
 generate_summary: false
 ```
 
-Set `generate_summary` to `true` when you want OpenAI to create one basic template-change summary during publishing. The summary is stored in `migration-bundle.json` and reused by every subscriber PR, so it is not regenerated per subscriber.
+Set `generate_summary` to `true` when you want the configured AI provider to create one basic template-change summary during publishing. The summary is stored in `migration-bundle.json` and reused by every subscriber PR, so it is not regenerated per subscriber.
 
 The command validates that the PR:
 

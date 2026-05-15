@@ -39,7 +39,7 @@ test("validates and applies create, update, and delete operations", () => {
   assert.equal(fs.existsSync(path.join(root, "remove.txt")), false);
 });
 
-test("generation schema is valid for strict OpenAI structured outputs", () => {
+test("generation schema is valid for strict structured outputs", () => {
   const operationSchema = GENERATION_RESPONSE_SCHEMA.properties.operations.items;
 
   assert.deepEqual(operationSchema.required, Object.keys(operationSchema.properties));
