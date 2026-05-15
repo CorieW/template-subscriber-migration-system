@@ -18,6 +18,7 @@ env:
   # Change this to pin a version, git URL, or tarball package spec.
   TEMPLATE_SYNC_PACKAGE: template-subscriber-migration-system@latest
   OPENAI_MODEL: gpt-5.5
+  TEMPLATE_SYNC_MODEL_ENDPOINT_URL: ${{ vars.TEMPLATE_SYNC_MODEL_ENDPOINT_URL }}
 
 jobs:
   command:
@@ -52,6 +53,8 @@ jobs:
           TEMPLATE_SYNC_BOT_TOKEN: ${{ secrets.TEMPLATE_SYNC_BOT_TOKEN }}
           TEMPLATE_SYNC_UPSTREAM_READ_TOKEN: ${{ secrets.TEMPLATE_SYNC_UPSTREAM_READ_TOKEN }}
           TEMPLATE_SYNC_DEFAULT_UPSTREAM_REPO: ${{ env.TEMPLATE_SYNC_DEFAULT_UPSTREAM_REPO }}
+          TEMPLATE_SYNC_MODEL_ENDPOINT_URL: ${{ env.TEMPLATE_SYNC_MODEL_ENDPOINT_URL }}
+          TEMPLATE_SYNC_MODEL_API_KEY: ${{ secrets.TEMPLATE_SYNC_MODEL_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_MODEL: ${{ env.OPENAI_MODEL }}
         run: handle-template-sync-command

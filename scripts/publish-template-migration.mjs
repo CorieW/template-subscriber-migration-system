@@ -5,7 +5,8 @@ import { createMigrationBundle } from "../src/template-sync/bundle.js";
 import { MIGRATION_BUNDLE_ASSET_NAME } from "../src/template-sync/constants.js";
 import {
   buildMigrationSummaryPrompt,
-  callOpenAiForMigrationSummary,
+  callModelForMigrationSummary,
+  modelEndpointConfigFromEnv,
   validateMigrationSummaryOutput,
 } from "../src/template-sync/openai.js";
 import { renderReleaseBody } from "../src/template-sync/releases.js";
@@ -45,9 +46,8 @@ async function main() {
   if (envFlagEnabled(process.env.TEMPLATE_SYNC_GENERATE_SUMMARY)) {
     const summaryResult = process.env.TEMPLATE_SYNC_SUMMARY_MOCK_RESPONSE
       ? validateMigrationSummaryOutput(JSON.parse(process.env.TEMPLATE_SYNC_SUMMARY_MOCK_RESPONSE))
-      : await callOpenAiForMigrationSummary({
-          apiKey: requireEnv("OPENAI_API_KEY"),
-          model: process.env.OPENAI_MODEL || "gpt-5.5",
+      : await callModelForMigrationSummary({
+          ...modelEndpointConfigFromEnv(),
           prompt: buildMigrationSummaryPrompt({ bundle }),
         });
     bundle = {

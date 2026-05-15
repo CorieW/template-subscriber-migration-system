@@ -25,8 +25,8 @@ Use it when repositories start from a shared template, but later drift because e
 14. If the command is `decline`, the tool closes the PR and marks the migration declined.
 15. If the command is `approve` or `revise`, the tool checks out the migration PR branch.
 16. The tool collects subscriber context: affected files and config files.
-17. The tool builds an OpenAI prompt from the bundle, repo context, drift, and maintainer instructions.
-18. OpenAI returns JSON file operations: `create`, `update`, or `delete`.
+17. The tool builds a generation prompt from the bundle, repo context, drift, and maintainer instructions.
+18. OpenAI or a configured custom model endpoint returns JSON file operations: `create`, `update`, or `delete`.
 19. The tool validates the JSON and safe paths.
 20. The tool writes the generated file changes.
 21. The tool skips lockfile refresh and subscriber package scripts in the privileged command workflow.

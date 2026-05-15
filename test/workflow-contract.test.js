@@ -22,6 +22,8 @@ test("publish workflow is manual only and publishes PR-scoped release assets", (
   assert.match(workflow, /TEMPLATE_SYNC_PACKAGE:/);
   assert.match(workflow, /TEMPLATE_SYNC_GENERATE_SUMMARY/);
   assert.match(workflow, /OPENAI_API_KEY/);
+  assert.match(workflow, /TEMPLATE_SYNC_MODEL_ENDPOINT_URL/);
+  assert.match(workflow, /TEMPLATE_SYNC_MODEL_API_KEY/);
   assert.match(workflow, /OPENAI_MODEL: gpt-5\.5/);
   assert.match(workflow, /Change this to pin a version, git URL, or tarball package spec/);
   assert.match(workflow, /TEMPLATE_SYNC_PACKAGE: template-subscriber-migration-system@latest/);
@@ -35,7 +37,8 @@ test("publish workflow is manual only and publishes PR-scoped release assets", (
   assert.match(script, /repository\.default_branch/);
   assert.match(script, /templateBranch/);
   assert.match(script, /createMigrationBundle/);
-  assert.match(script, /callOpenAiForMigrationSummary/);
+  assert.match(script, /callModelForMigrationSummary/);
+  assert.match(script, /modelEndpointConfigFromEnv/);
   assert.match(script, /TEMPLATE_SYNC_GENERATE_SUMMARY/);
   assert.match(script, /releases/);
   assert.match(script, /target_commitish: pullRequest\.merge_commit_sha/);
@@ -78,6 +81,8 @@ test("comment workflow supports approve revise decline with bot-token pushes", (
   assert.match(workflow, /token: \$\{\{ secrets\.TEMPLATE_SYNC_BOT_TOKEN \}\}/);
   assert.match(workflow, /persist-credentials: false/);
   assert.match(workflow, /OPENAI_API_KEY/);
+  assert.match(workflow, /TEMPLATE_SYNC_MODEL_ENDPOINT_URL/);
+  assert.match(workflow, /TEMPLATE_SYNC_MODEL_API_KEY/);
   assert.match(workflow, /TEMPLATE_SYNC_PACKAGE:/);
   assert.match(workflow, /Change this to pin a version, git URL, or tarball package spec/);
   assert.match(workflow, /TEMPLATE_SYNC_PACKAGE: template-subscriber-migration-system@latest/);
@@ -103,8 +108,10 @@ test("comment workflow supports approve revise decline with bot-token pushes", (
   assert.match(script, /templateSyncAlreadyCommented/);
   assert.match(script, /Cannot approve after initial generation/);
   assert.match(script, /OPENAI_API_KEY/);
+  assert.match(script, /callModelForGeneration/);
+  assert.match(script, /modelEndpointConfigFromEnv/);
   assert.ok(
-    script.indexOf('const openAiApiKey = requireEnv("OPENAI_API_KEY");') <
+    script.indexOf("const modelConfig = modelEndpointConfigFromEnv();") <
       script.indexOf("process.env.TEMPLATE_SYNC_GENERATION_MOCK_RESPONSE"),
   );
   assert.ok(

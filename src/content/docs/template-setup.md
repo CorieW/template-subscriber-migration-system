@@ -21,6 +21,13 @@ env:
   OPENAI_MODEL: gpt-5.5
 ```
 
+Optional custom summary endpoint:
+
+```yaml
+env:
+  TEMPLATE_SYNC_MODEL_ENDPOINT_URL: https://models.example/template-sync-summary
+```
+
 Required permissions:
 
 ```yaml
@@ -40,7 +47,7 @@ pr_number: 123
 generate_summary: false
 ```
 
-Set `generate_summary` to `true` when you want OpenAI to create one basic template-change summary during publishing. The summary is stored in `migration-bundle.json` and reused by every subscriber PR, so it is not regenerated per subscriber.
+Set `generate_summary` to `true` when you want the configured model endpoint to create one basic template-change summary during publishing. By default this uses the OpenAI Responses API; set `TEMPLATE_SYNC_MODEL_ENDPOINT_URL` to call a custom endpoint. The summary is stored in `migration-bundle.json` and reused by every subscriber PR, so it is not regenerated per subscriber.
 
 The command validates that the PR:
 

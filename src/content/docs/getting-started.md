@@ -58,7 +58,8 @@ Set required secrets:
 | Secret                              | Purpose                                                               |
 | ----------------------------------- | --------------------------------------------------------------------- |
 | `TEMPLATE_SYNC_BOT_TOKEN`           | Opens PRs, pushes commits, comments, and writes repository variables. |
-| `OPENAI_API_KEY`                    | Generates subscriber-specific migration file operations.              |
+| `OPENAI_API_KEY`                    | Generates subscriber-specific migration file operations with OpenAI.  |
+| `TEMPLATE_SYNC_MODEL_API_KEY`       | Optional bearer token for a custom model endpoint.                    |
 | `TEMPLATE_SYNC_UPSTREAM_READ_TOKEN` | Optional token for private upstream release reads.                    |
 
 ## 4. Apply a Migration
@@ -76,4 +77,6 @@ With guidance:
 Keep the subscriber theme and preserve the existing analytics adapter.
 ```
 
-The command workflow does not run generated repository `package.json` scripts while `OPENAI_API_KEY` or GitHub tokens are present. Use normal PR CI or local review to validate the generated branch after it is pushed.
+Set `TEMPLATE_SYNC_MODEL_ENDPOINT_URL` in the command workflow when approve/revise should call a custom model endpoint instead of OpenAI. The endpoint receives an OpenAI Responses-compatible payload and can return either OpenAI-style output text or direct generation-plan JSON.
+
+The command workflow does not run generated repository `package.json` scripts while model credentials or GitHub tokens are present. Use normal PR CI or local review to validate the generated branch after it is pushed.
